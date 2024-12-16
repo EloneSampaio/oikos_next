@@ -5,21 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Search, Shield, CalendarDays, Truck, Globe } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-// import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function HomePage() {
-  // const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
 
 
 
   // Redireciona se o usuário não estiver autenticado
-  //  if (!isAuthenticated) {
-  //   router.push("/sebastiao/login"); // Redireciona para a página de login
-  //   return null; // Retorna `null` para evitar renderização
-  // }
+    if (!isAuthenticated) {
+     router.push("/sebastiao/login"); // Redireciona para a página de login
+     return null; // Retorna `null` para evitar renderização
+   }
   return (
     <div className="min-h-screen bg-[#2B5B3C]">
       <div className="container max-w-md mx-auto p-4">
@@ -142,8 +142,8 @@ export default function HomePage() {
               },
               {
                 id: "donation",
-                icon: <a href="/maysa/doacao">🤝</a>,
-                label: <a href="/maysa/doacao">Doação</a>,
+                icon: <a href="/maysa/donation">🤝</a>,
+                label: <a href="/maysa/donation">Doação</a>,
               },
               {
                 icon: (

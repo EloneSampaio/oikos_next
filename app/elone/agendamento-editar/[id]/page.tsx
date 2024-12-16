@@ -5,7 +5,7 @@ import { Header } from "@/components/header";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getToken } from "../../helpers/token";
+import { getToken } from "../../../helpers/token";
 
 interface WasteOption {
   id: string;
@@ -37,11 +37,13 @@ export default function ScheduleDetails() {
         const [companiesResponse, wastesResponse] = await Promise.all([
           fetch("http://localhost:3333/companies", {
             headers: {
+              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }),
           fetch("http://localhost:3333/materials", {
             headers: {
+              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }),

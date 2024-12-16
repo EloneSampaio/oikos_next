@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 
 // Tipos do contexto
 interface AuthContextProps {
@@ -21,7 +21,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const login = (token: string) => {
-    localStorage.setItem("accessToken", token);
+    const expirationTime = Date.now() + 5 * 60 * 60 * 1000; // 5 horas em milissegundos
+    const tokenData = JSON.stringify({ token, expiration: expirationTime });
+  
+    localStorage.setItem("accessToken", tokenData);
     setIsAuthenticated(true);
   };
 
@@ -29,6 +32,20 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     localStorage.removeItem("accessToken");
     setIsAuthenticated(false);
   };
+
+  useEffect(() => {
+    const tokenData = localStorage.getItem("accessToken");
+  
+    if (tokenData) {
+      const { token, expiration } = JSON.parse(tokenData);
+  
+      if (Date.now() < expiration) {
+        setIsAuthenticated(true);
+      } else {
+        logout(); // Token expirado
+      }
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>

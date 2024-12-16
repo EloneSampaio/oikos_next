@@ -83,6 +83,13 @@ export function Header({ title = "Doação" }: HeaderProps) {
               >
                 Cadastro de Cronograma de Coleta
               </Link>
+
+              <Link
+                href="/maysa/doacao"
+                className="block text-lg text-[#517D36] font-semibold"
+              >
+                Cadastrar doação
+              </Link>
             </nav>
           </div>
         </div>

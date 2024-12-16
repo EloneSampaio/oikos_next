@@ -8,40 +8,77 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { getToken } from "../../helpers/token";
+import { useRouter } from "next/navigation";
+
+interface ProfileData {
+  firstName: string;
+  lastName: string;
+  cpf: string;
+  phone: string;
+  address: {
+    street: string;
+    number: string;
+    city: string;
+    stateAcronym: string;
+  };
+}
 
 export default function ProfilePage() {
-  const [profileData, setProfileData] = useState(null);
+  const router = useRouter();
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [error, setError] = useState(false);
-  const token = localStorage.getItem("accessToken"); // Obtém o token do localStorage
+  const [loading, setLoading] = useState(true);
+
+  // Campos para o cadastro de empresas
+  const [cnpj, setCnpj] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Função para buscar dados da API
   useEffect(() => {
     async function fetchProfile() {
       try {
+        const token = getToken();
         const response = await fetch("http://localhost:3333/profile/info", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Inclui o token no cabeçalho
+            Authorization: `Bearer ${token}`,
           },
-        }); // Altere para sua URL da API
+        });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch profile data");
+          throw new Error("Erro ao buscar dados do perfil");
         }
+
         const data = await response.json();
-        console.log("Dados do perfil:", data);
         setProfileData(data);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Erro ao buscar dados do perfil:", error);
         setError(true);
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchProfile();
   }, []);
 
+  const handleRegisterCompany = () => {
+    if (!cnpj.trim() || !termsAccepted) {
+      alert("Por favor, insira o CNPJ e aceite os termos para continuar.");
+      return;
+    }
+
+    // Redirecionar para a página de cadastro da empresa
+    router.push("/christian/register");
+  };
+
   const renderProfileInfo = () => {
+    if (loading) {
+      return <p className="text-sm text-gray-500">Carregando...</p>;
+    }
+
     if (error) {
       return (
         <p className="text-sm text-red-500">
@@ -51,14 +88,14 @@ export default function ProfilePage() {
     }
 
     if (!profileData) {
-      return <p className="text-sm text-gray-500">Carregando...</p>;
+      return null;
     }
 
     const {
       firstName,
       lastName,
-      phone,
       cpf,
+      phone,
       address: { street, number, city, stateAcronym },
     } = profileData;
 
@@ -68,16 +105,16 @@ export default function ProfilePage() {
           {firstName} {lastName}
         </h2>
         <div className="space-y-1 text-sm text-[#006400]">
-          <p>{cpf}</p>
-          <p>{phone}</p>
-          <p>{`${street}, ${number}, ${city}, ${stateAcronym}`}</p>
+          <p>CPF: {cpf}</p>
+          <p>Telefone: {phone}</p>
+          <p>Endereço: {`${street}, ${number}, ${city}, ${stateAcronym}`}</p>
         </div>
       </>
     );
   };
 
   return (
-    <main className="min-h-screen  bg-[#2B5B3C]">
+    <main className="min-h-screen bg-[#2B5B3C]">
       <div className="mx-auto max-w-md px-4 py-6">
         {/* Header */}
         <header className="mb-6 flex items-center justify-between">
@@ -123,16 +160,8 @@ export default function ProfilePage() {
               <span className="font-semibold">
                 {profileData?.firstName || "Usuário"}
               </span>
-              , toda e qualquer informação deverá passar por um período de
-              conferência de até 3 dias úteis. Solicitamos que você forneça os
-              dados reais de sua empresa, garantindo que estejam em seu nome.
-              Caso ainda não tenha um CNPJ, recomendamos que procure um contador
-              ou crie um MEI no portal do Governo Federal.
-            </p>
-            <p className="text-sm text-white/90">
-              Todo e qualquer dado é de nossa responsabilidade a proteção e sua
-              persistência. Informamos segundo a LGPD que seus dados podem ser
-              usados para estudo e divulgação de resultados, porém anonimizados.
+              , certifique-se de fornecer informações reais para sua empresa. Se
+              não tiver um CNPJ, crie um MEI no portal do Governo Federal.
             </p>
           </div>
 
@@ -142,6 +171,8 @@ export default function ProfilePage() {
                 CNPJ
               </label>
               <Input
+                value={cnpj}
+                onChange={(e) => setCnpj(e.target.value)}
                 placeholder="Informe o CNPJ"
                 className="bg-[#006400] text-white placeholder:text-white/70 border-none"
               />
@@ -150,6 +181,8 @@ export default function ProfilePage() {
             <div className="flex items-center space-x-2 pb-3">
               <Checkbox
                 id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(!!checked)}
                 className="border-white data-[state=checked]:bg-white data-[state=checked]:text-[#008000]"
               />
               <label
@@ -158,14 +191,14 @@ export default function ProfilePage() {
               >
                 Aceitar os termos
               </label>
-              <br />
             </div>
 
-            <Link href="/christian/register">
-              <Button className="w-full  bg-[#356646] text-white hover:bg-[#356646]/90 margin-bottom: 10px">
-                Cadastrar empresa
-              </Button>
-            </Link>
+            <Button
+              onClick={handleRegisterCompany}
+              className="w-full bg-[#356646] text-white hover:bg-[#356646]/90 margin-bottom: 10px"
+            >
+              Cadastrar empresa
+            </Button>
           </div>
         </div>
       </div>

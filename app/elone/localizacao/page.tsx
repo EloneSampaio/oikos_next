@@ -1,7 +1,37 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
 import Link from "next/link";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Schedule() {
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError("Geolocalização não é suportada pelo seu navegador.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setError(null);
+      },
+      (err) => {
+        setError("Não foi possível obter a localização. Verifique as permissões.");
+        console.error("Erro ao obter localização:", err);
+      }
+    );
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#2E7D32]">
       <Header title="Agendamento" />
@@ -9,27 +39,38 @@ export default function Schedule() {
         <div className="space-y-6">
           <div>
             <h2 className="text-lg mb-2 py-6">Localização da Coleta</h2>
-            <div className="h-64 bg-gray-100 rounded-lg mb-4">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1000!2d-0.1276!3d51.5074!2z!5e0!3m2!1sen!2suk!4v1234567890!5m2!1sen!2suk"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="rounded-lg"
-              />
-            </div>
+            {location ? (
+              <div className="p-4 bg-gray-100 rounded-lg">
+                <p>
+                  <strong>Latitude:</strong> {location.latitude}
+                </p>
+                <p>
+                  <strong>Longitude:</strong> {location.longitude}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Use os dados acima para verificar sua localização no Google Maps.
+                </p>
+              </div>
+            ) : error ? (
+              <div className="p-4 bg-red-100 rounded-lg text-red-600">
+                {error}
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-100 rounded-lg">
+                Obtendo localização...
+              </div>
+            )}
           </div>
 
           <div>
             <h2 className="text-lg mb-2">Data escolhida para coleta</h2>
-            <input
-              type="text"
-              value="22/10/2024 17:30"
-              readOnly
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              showTimeSelect
+              dateFormat="dd/MM/yyyy HH:mm"
               className="w-full border rounded-lg p-3"
+              placeholderText="Escolha a data e hora"
             />
           </div>
 
