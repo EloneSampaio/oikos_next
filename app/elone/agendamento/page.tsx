@@ -26,7 +26,7 @@ export default function ScheduleDetails() {
     companyId: "",
     wastes: [] as string[],
     scheduleFor: "",
-    customerId: "7d9c9e7f-7c9e-4c9e-9c9e-7f9c9e4c9e9c",
+    
   });
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
